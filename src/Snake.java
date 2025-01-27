@@ -51,7 +51,7 @@ public class Snake {
 
     }
 
-    // Adds a new head to snake at specified coordinates
+    // Adds a new head to the snake at specified coordinates
     public void addHead(int x, int y) {
 
         // Create new node at given position
@@ -66,6 +66,20 @@ public class Snake {
         // Update tail reference for initialization and movement
         if (tail == null) {tail = head;}
 
+    }
+
+    // Adds a new head but doesn't update the tail reference, adding the new segment to the snake
+    public void growSnake(int x, int y) {
+
+        // Create new node at given position
+        Node newHead = new Node(x, y);
+
+        // Link the new node to the current head
+        newHead.next = head;
+
+        // Update the head reference
+        head = newHead;
+    
     }
 
     // Removes tail node to help simulate more realisitic movement on the game grid
