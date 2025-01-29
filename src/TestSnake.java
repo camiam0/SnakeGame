@@ -1,3 +1,8 @@
+//Name: Cameron Bartlett
+//Date: 01/21/2025
+//Lab 2 - Objects - Snake Game
+//Description: Test class for Snake class
+
 public class TestSnake {
     
     public static void main(String[] args) {
