@@ -133,7 +133,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         // check for snake collision with wall or itself (or fruit eventually)
         // and prevents movement if the next position is out of bounds 
-        if (snakeX < 0 || snakeX >= screenWidth || snakeY < 0 || snakeY >= screenHeight || snake.checkCollision(screenWidth, screenHeight)) {
+        if (snakeX < 0 || snakeX + tileSize > screenWidth || snakeY < 0 || snakeY + tileSize > screenHeight || snake.checkCollision(screenWidth, screenHeight)) {
 
             System.out.println("Collision detected!");
             stopGame(); // call stopGame
