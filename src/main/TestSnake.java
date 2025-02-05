@@ -1,7 +1,9 @@
 //Name: Cameron Bartlett
-//Date: 01/21/2025
-//Lab 2 - Objects - Snake Game
-//Description: Test class for Snake class
+//Date: 02/04/2025
+//Lab 2&3 - Objects - Snake Game
+//Description: Test class to test snake functions
+
+package main;
 
 public class TestSnake {
     
