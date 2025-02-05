@@ -1,4 +1,4 @@
-//Name: Cameron Bartlett
+//Names: Cameron Bartlett, Yosyp Vasyliev, John Kerstetter
 //Date: 02/04/2025
 //Lab 2&3 - Objects - Snake Game
 //Description: Main program

@@ -1,4 +1,4 @@
-//Name: Cameron Bartlett
+//Names: Cameron Bartlett, Yosyp Vasyliev, John Kerstetter
 //Date: 02/04/2025
 //Lab 2&3 - Objects - Snake Game
 //Description: Class for game
@@ -28,12 +28,17 @@ public class GamePanel extends JPanel implements Runnable {
 
     int FPS = 60; // frames per second
 
-    KeyHandler keyH = new KeyHandler();
+    KeyHandler keyH = new KeyHandler(this); // pass GamePanel to KeyHandler
     Thread gameThread;
 
     private Snake snake; // define snake
+    private Fruit fruit; // define fruit
 
-    private String lastDirection = "RIGHT"; // default starting direction
+    //MOVEMENT
+    private String lastDirection = "NONE"; // default starting direction
+    private boolean waitingForInput = true; // ensures movement is blocked until the player presses a key
+    private int moveDelay = 175; // time in miliseconds between movements
+    private long lastMoveTime = System.currentTimeMillis(); // tracks when the snake last moved
 
     public GamePanel() {
 
@@ -45,7 +50,10 @@ public class GamePanel extends JPanel implements Runnable {
         this.setFocusable(true);
 
         // initialize the snake
-        snake = new Snake(5 * tileSize, 5 * tileSize);
+        snake = new Snake(5 * tileSize, 5 * tileSize, tileSize);
+
+        // initialize the fruit
+        fruit = new Fruit(tileSize, maxScreenCol, maxScreenRow);
 
     } // end of GamePanel constructor
 
@@ -86,54 +94,73 @@ public class GamePanel extends JPanel implements Runnable {
     // reads changes
     public void update() {
 
+        // prevent movement until the player presses a key after reset
+        if (waitingForInput) {
+        
+            if (!keyH.lastInput.equals("NONE")) {
+                
+                lastDirection = keyH.lastInput;
+                waitingForInput = false; // allow movement after input
+        
+            }
+    
+            return; // block update until input is received
+
+        }
+
+        long currentTime = System.currentTimeMillis();
+
+        // only move the snake if enough time has passed
+        if (currentTime - lastMoveTime < moveDelay) {return;} // exit update() and wait for the next frame
+
+        lastMoveTime = currentTime; // update the time when the movement happens
+
         // PLAYER POSITION
         // gets the current position of snake's head
         int[] headPos = snake.getHeadPosition();
         // create variables for Snake movement
         int snakeX = headPos[0];
         int snakeY = headPos[1];
-        int snakeSpeed = 4;
+        int snakeSpeed = tileSize;
 
-        if(keyH.upPressed == true) {
+        // wait for player input before starting movement
+        if (waitingForInput) {
             
-            snakeY -= snakeSpeed;
-            lastDirection = "UP";
-        
-        } else if(keyH.downPressed == true) {
+            if (!keyH.lastInput.equals("NONE")) {
+                
+                lastDirection = keyH.lastInput;
+                waitingForInput = false; // allow movement after input
             
-            snakeY += snakeSpeed;
-            lastDirection = "DOWN";
-        
-        } else if(keyH.leftPressed == true) {
+            } // end of if
             
-            snakeX -= snakeSpeed;
-            lastDirection = "LEFT";
+            return; // completely block update() until input is received
         
-        } else if(keyH.rightPressed == true) {
-            
-            snakeX += snakeSpeed;
-            lastDirection = "RIGHT";
+        } // end of if
         
-        } else {
+        // prevents reversing direction into itself
+        if (keyH.lastInput.equals("UP") && !lastDirection.equals("DOWN")) { lastDirection = "UP"; }
+        else if (keyH.lastInput.equals("DOWN") && !lastDirection.equals("UP")) { lastDirection = "DOWN"; }
+        else if (keyH.lastInput.equals("LEFT") && !lastDirection.equals("RIGHT")) { lastDirection = "LEFT"; }
+        else if (keyH.lastInput.equals("RIGHT") && !lastDirection.equals("LEFT")) { lastDirection = "RIGHT"; }
 
-            // if no key is pressed, continue in the last direction
-            switch (lastDirection) {
+        // move in the last stored direction
+        switch (lastDirection) {
 
-                case "UP": snakeY -= snakeSpeed; break;
-                case "DOWN": snakeY += snakeSpeed; break;
-                case "LEFT": snakeX -= snakeSpeed; break;
-                case "RIGHT": snakeX += snakeSpeed; break;
+            case "UP": snakeY -= snakeSpeed; break;
+            case "DOWN": snakeY += snakeSpeed; break;
+            case "LEFT": snakeX -= snakeSpeed; break;
+            case "RIGHT": snakeX += snakeSpeed; break;
 
-            } // end of lastDirection switch case
-
-        } // end of if/else
+        } // end of lastDirection switch case
 
         // move the snake: add a new head at the new position
         snake.addHead(snakeX, snakeY);
 
-        // check for snake collision with wall or itself (or fruit eventually)
+        // check for snake collision with wall or itself
         // and prevents movement if the next position is out of bounds 
-        if (snakeX < 0 || snakeX + tileSize > screenWidth || snakeY < 0 || snakeY + tileSize > screenHeight || snake.checkCollision(screenWidth, screenHeight)) {
+        if (snakeX < 0 || snakeX + tileSize > screenWidth || 
+            snakeY < 0 || snakeY + tileSize > screenHeight || 
+            snake.checkCollision(screenWidth, screenHeight)) {
 
             System.out.println("Collision detected!");
             stopGame(); // call stopGame
@@ -141,8 +168,18 @@ public class GamePanel extends JPanel implements Runnable {
 
         } // end of if
 
+        // check if snake head is at the same position as a fruit
+        int[] fruitPos = fruit.getFruitPosition();
+        if (snakeX == fruitPos[0] && snakeY == fruitPos[1]) {
+
+            System.out.println("Fruit eaten! Growing snake...");
+            fruit.randomizePosition(maxScreenCol, maxScreenRow);
+            snake.growSnake(snakeX, snakeY); // add a new segment to the snake
+
+        } // end of if
+
         // remove the tail to simulate movement (unless growing)
-        snake.removeTail(); // NEED TO ADD IF STATEMENT FOR FRUIT
+        snake.removeTail();
     
     } // end of update
 
@@ -153,6 +190,18 @@ public class GamePanel extends JPanel implements Runnable {
         
         super.paintComponent(g); // erase previous frame
         Graphics2D g2 = (Graphics2D)g; // improve 2D graphics
+
+        // draw a grid
+        g2.setColor(Color.DARK_GRAY); // grid color
+        for (int x = 0; x < screenWidth; x += tileSize) {
+
+            for (int y = 0; y < screenHeight; y += tileSize) {
+
+                g2.drawRect(x, y, tileSize, tileSize); // draw each grid cell
+
+            } // end of inner for loop
+
+        } // end of for loop
 
         g2.setColor(Color.green); // sets component color (snake)
         
@@ -165,16 +214,30 @@ public class GamePanel extends JPanel implements Runnable {
             currentNode = currentNode.next; // move to the next node
         
         }
+
+        fruit.paint(g2);
         
         g2.dispose();
 
     } // end of paintComponent
 
+    // getter method for lastDirection
+    public String getLastDirection() {return lastDirection;}
+
     public void resetGame() {
 
-        snake.reset(5 * tileSize, 5 * tileSize); // reset snake
-        lastDirection = "RIGHT"; // reset starting direction
-        startGameThread(); // restart the game
+        // fully reset all movement variables
+        lastDirection = "NONE";
+        keyH.lastInput = "NONE";
+        lastMoveTime = System.currentTimeMillis();
+
+        // reset the snake with a clean state
+        snake = new Snake(5 * tileSize, 5 * tileSize, tileSize);
+
+        // prevent update() from running immediately after reset
+        waitingForInput = true;
+
+        if (gameThread == null) {startGameThread();} // restarts game thread
 
     } // end of resetGame
 

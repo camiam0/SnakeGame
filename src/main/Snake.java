@@ -1,7 +1,7 @@
-//Name: Cameron Bartlett
+//Names: Cameron Bartlett, Yosyp Vasyliev, John Kerstetter
 //Date: 02/04/2025
 //Lab 2&3 - Objects - Snake Game
-//Description: Snake class for a snake game
+//Description: Snake Class for a snake game
 
 package main;
 
@@ -36,20 +36,24 @@ public class Snake {
     private Node tail; // last node of the snake
 
     // Snake constructor
-    public Snake(int startX, int startY) {
+    public Snake(int startX, int startY, int tileSize) {
 
         // create initial node at starting position by calling reset method
-        reset(startX, startY);
+        reset(startX, startY, tileSize);
 
     } // end of Snake constructor
 
     // resets the snake to its initial state
-    public void reset(int startX, int startY) {
+    public void reset(int startX, int startY, int tileSize) {
 
-        // create a new initial node at starting position
-        Node initialNode = new Node(startX, startY);
-        head = initialNode;
-        tail = initialNode;
+        // creates a 3-segment snake
+        head = new Node(startX, startY);
+        Node second = new Node(startX - tileSize, startY);
+        Node third = new Node(startX - 2 * tileSize, startY);
+
+        head.next = second;
+        second.next = third;
+        tail = third;
 
     } // end of reset
 

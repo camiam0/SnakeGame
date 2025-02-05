@@ -1,4 +1,4 @@
-//Name: Cameron Bartlett
+//Names: Cameron Bartlett, Yosyp Vasyliev, John Kerstetter
 //Date: 02/04/2025
 //Lab 2&3 - Objects - Snake Game
 //Description: Test class to test snake functions
@@ -17,7 +17,7 @@ public class TestSnake {
 
         // Test 1: Constructor initializes the snake at the correct position
         System.out.println("Testing Constructor...");
-        Snake snake = new Snake (5, 5);
+        Snake snake = new Snake (5, 5, 0);
         // Get the head position
         int [] headPosition = snake.getHeadPosition();
         System.out.println("Initial Head: " + java.util.Arrays.toString(headPosition));
@@ -74,7 +74,7 @@ public class TestSnake {
 
         // Test 6: reset method works as intended
         System.out.println("\nTesting reset...");
-        snake.reset(0, 0);
+        snake.reset(0, 0, 0);
         // Check snake length
         snakeLength = snake.getSnakeLength();
         System.out.println("New Snake Length: " + snakeLength);
@@ -88,4 +88,4 @@ public class TestSnake {
         System.out.println("Test 6 passed: " + test6);
 
     }
-}
+} // end of TestSnake class
